@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const asyncHandler = require("../utils/async-handler");
-const { Professional, User, Availability, TalentId } = require("../../models");
+const { Professional, User, Availability, TalentId, Institute } = require("../../models");
 
 const searchProfessionals = asyncHandler(async (req, res) => {
   const {
@@ -51,6 +51,27 @@ const searchProfessionals = asyncHandler(async (req, res) => {
   return res.status(200).json({ data: rows });
 });
 
+const searchInstitutes = asyncHandler(async (req, res) => {
+  const { name, location, courses } = req.query;
+
+  const where = {};
+  if (name) where.instituteName = { [Op.like]: `%${name}%` };
+  if (location) where.location = { [Op.like]: `%${location}%` };
+  if (courses) where.coursesOffered = { [Op.like]: `%${courses}%` };
+
+  const rows = await Institute.findAll({
+    where,
+    include: [
+      { model: User, as: "user", attributes: ["id", "email", "status"] },
+      { model: TalentId, as: "talentId" },
+    ],
+    order: [["instituteName", "ASC"]],
+  });
+
+  return res.status(200).json({ data: rows });
+});
+
 module.exports = {
   searchProfessionals,
+  searchInstitutes,
 };

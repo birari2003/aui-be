@@ -4,6 +4,8 @@ const { protect, authorizeRoles } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
+router.get("/profile/public/:talentCode", controller.getPublicProfile);
+
 router.use(protect, authorizeRoles("professional"));
 
 router.post("/profile", controller.upsertProfile);

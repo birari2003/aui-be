@@ -80,8 +80,34 @@ const updateAvailability = asyncHandler(async (req, res) => {
   return res.status(200).json({ message: "Availability updated", data: rows });
 });
 
+const getPublicProfile = asyncHandler(async (req, res) => {
+  const { talentCode } = req.params;
+
+  const talentId = await TalentId.findOne({
+    where: { talentCode },
+    include: [
+      {
+        model: Professional,
+        as: "professional",
+        include: [
+          { model: Availability, as: "availabilities" },
+          { model: WorkLedger, as: "workLedgers" },
+          { model: User, as: "user", attributes: ["status"] },
+        ],
+      },
+    ],
+  });
+
+  if (!talentId || !talentId.professional) {
+    return res.status(404).json({ message: "Professional profile not found" });
+  }
+
+  return res.status(200).json({ data: talentId.professional });
+});
+
 module.exports = {
   upsertProfile,
   getMyProfile,
   updateAvailability,
+  getPublicProfile,
 };

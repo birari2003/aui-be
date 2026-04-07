@@ -1,5 +1,5 @@
 const asyncHandler = require("../utils/async-handler");
-const { Institute, Booking, Professional } = require("../../models");
+const { Institute, Booking, Professional, TalentId } = require("../../models");
 const { createLedgerFromBooking } = require("../services/ledger.service");
 
 async function getInstituteByUser(userId) {
@@ -18,13 +18,85 @@ const upsertProfile = asyncHandler(async (req, res) => {
     await institute.update(payload);
   }
 
+  const reloaded = await Institute.findOne({ where: { id: institute.id } });
+
+  const [talentId] = await TalentId.findOrCreate({
+    where: { instituteId: institute.id },
+    defaults: {
+      instituteId: institute.id,
+      talentCode: `AUI-INST-${String(institute.id).padStart(6, "0")}`,
+    },
+  });
+
   return res.status(200).json({
     message: created ? "Institute profile created" : "Institute profile updated",
-    data: institute,
+    data: {
+      profile: reloaded,
+      talentId,
+    },
   });
 });
 
+const getMyProfile = asyncHandler(async (req, res) => {
+  let profile = await Institute.findOne({
+    where: { userId: req.user.id },
+    include: [
+      { model: TalentId, as: "talentId" },
+      { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
+    ],
+  });
+
+  if (!profile) {
+    return res.status(404).json({ message: "Institute profile not found" });
+  }
+
+  // Ensure TalentId exists
+  if (!profile.talentId) {
+    await TalentId.findOrCreate({
+      where: { instituteId: profile.id },
+      defaults: {
+        instituteId: profile.id,
+        talentCode: `AUI-INST-${String(profile.id).padStart(6, "0")}`,
+      },
+    });
+    // Re-fetch to include association
+    profile = await Institute.findOne({
+      where: { userId: req.user.id },
+      include: [
+        { model: TalentId, as: "talentId" },
+        { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
+      ],
+    });
+  }
+
+  return res.status(200).json({ data: profile });
+});
+
+const getPublicProfile = asyncHandler(async (req, res) => {
+  const { talentCode } = req.params;
+
+  const talentId = await TalentId.findOne({
+    where: { talentCode },
+    include: [
+      {
+        model: Institute,
+        as: "institute",
+        include: [
+          { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
+        ],
+      },
+    ],
+  });
+
+  if (!talentId || !talentId.institute) {
+    return res.status(404).json({ message: "Institute profile not found" });
+  }
+
+  return res.status(200).json({ data: talentId.institute });
+});
+
 const createBooking = asyncHandler(async (req, res) => {
+// ... existing code ...
   const institute = await getInstituteByUser(req.user.id);
   if (!institute) {
     return res.status(404).json({ message: "Institute profile not found" });
@@ -77,4 +149,6 @@ module.exports = {
   createBooking,
   updateBookingStatus,
   listBookings,
+  getMyProfile,
+  getPublicProfile,
 };

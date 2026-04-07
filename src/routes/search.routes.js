@@ -11,4 +11,11 @@ router.get(
   controller.searchProfessionals
 );
 
+router.get(
+  "/institutes",
+  protect,
+  authorizeRoles("professional", "studio"),
+  controller.searchInstitutes
+);
+
 module.exports = router;

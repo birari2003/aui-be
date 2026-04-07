@@ -79,6 +79,22 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: false,
       },
+      avatarUrl: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      bannerUrl: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      establishedYear: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       tableName: "institutes",
@@ -88,6 +104,7 @@ module.exports = (sequelize, DataTypes) => {
   Institute.associate = (models) => {
     Institute.belongsTo(models.User, { foreignKey: "userId", as: "user" });
     Institute.hasMany(models.Booking, { foreignKey: "instituteId", as: "bookings" });
+    Institute.hasOne(models.TalentId, { foreignKey: "instituteId", as: "talentId" });
   };
 
   return Institute;

@@ -7,6 +7,7 @@ const instituteRoutes = require("./institute.routes");
 const searchRoutes = require("./search.routes");
 const adminRoutes = require("./admin.routes");
 const reelRoutes = require("./reel.routes");
+const collaborationRoutes = require("./collaboration.routes");
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use("/institutes", instituteRoutes);
 router.use("/search", searchRoutes);
 router.use("/admin", adminRoutes);
 router.use("/reels", reelRoutes);
+router.use("/collaboration", collaborationRoutes);
 
 module.exports = router;

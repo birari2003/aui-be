@@ -4,25 +4,31 @@ module.exports = (sequelize, DataTypes) => {
   const TalentId = sequelize.define(
     "TalentId",
     {
-      professionalId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        unique: true,
-      },
-      talentCode: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-        unique: true,
-      },
+    professionalId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
     },
-    {
-      tableName: "talent_ids",
-    }
-  );
+    instituteId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      unique: true,
+    },
+    talentCode: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      unique: true,
+    },
+  },
+  {
+    tableName: "talent_ids",
+  }
+);
 
-  TalentId.associate = (models) => {
-    TalentId.belongsTo(models.Professional, { foreignKey: "professionalId", as: "professional" });
-  };
+TalentId.associate = (models) => {
+  TalentId.belongsTo(models.Professional, { foreignKey: "professionalId", as: "professional" });
+  TalentId.belongsTo(models.Institute, { foreignKey: "instituteId", as: "institute" });
+};
 
   return TalentId;
 };
