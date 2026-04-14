@@ -3,7 +3,7 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     return queryInterface.bulkInsert('users', [{
-      email: 'gauravbirari07@gmail.com',
+      email: 'admin@auitalent.com',
       role: 'admin',
       status: 'approved',
       created_at: new Date(),
@@ -12,6 +12,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    return queryInterface.bulkDelete('users', { email: 'gauravbirari07@gmail.com' }, {});
+    return queryInterface.bulkDelete('users', { email: 'admin@auitalent.com' }, {});
   }
 };
