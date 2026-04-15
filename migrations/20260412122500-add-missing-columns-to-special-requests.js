@@ -2,7 +2,7 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const tableInfo = await queryInterface.describeTable("");
+    const tableInfo = await queryInterface.describeTable("special_requests");
 
     if (!tableInfo.sender_role) {
       await queryInterface.addColumn("special_requests", "sender_role", {
