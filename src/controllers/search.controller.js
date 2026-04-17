@@ -29,8 +29,12 @@ const searchProfessionals = asyncHandler(async (req, res) => {
   if (verified === "false") where.verificationStatus = false;
 
   const include = [
-    { model: User, as: "user", attributes: ["id", "email", "status"] },
-    { model: TalentId, as: "talentId" },
+    { 
+      model: User, 
+      as: "user", 
+      attributes: ["id", "email", "status"],
+      include: [{ model: TalentId, as: "talentId" }]
+    },
   ];
 
   if (availability) {
@@ -62,8 +66,12 @@ const searchInstitutes = asyncHandler(async (req, res) => {
   const rows = await Institute.findAll({
     where,
     include: [
-      { model: User, as: "user", attributes: ["id", "email", "status"] },
-      { model: TalentId, as: "talentId" },
+      { 
+        model: User, 
+        as: "user", 
+        attributes: ["id", "email", "status"],
+        include: [{ model: TalentId, as: "talentId" }]
+      },
     ],
     order: [["instituteName", "ASC"]],
   });

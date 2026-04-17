@@ -60,8 +60,12 @@ const getMyRequests = asyncHandler(async (req, res) => {
         as: "professional", 
         attributes: ["id", "position"],
         include: [
-          { model: User, as: "user", attributes: ["email"] },
-          { model: TalentId, as: "talentId" }
+          { 
+            model: User, 
+            as: "user", 
+            attributes: ["email"],
+            include: [{ model: TalentId, as: "talentId" }]
+          },
         ]
       },
       { 
@@ -69,8 +73,12 @@ const getMyRequests = asyncHandler(async (req, res) => {
         as: "institute", 
         attributes: ["id", "instituteName"],
         include: [
-          { model: User, as: "user", attributes: ["email"] },
-          { model: TalentId, as: "talentId" }
+          { 
+            model: User, 
+            as: "user", 
+            attributes: ["email"],
+            include: [{ model: TalentId, as: "talentId" }]
+          },
         ]
       },
     ],

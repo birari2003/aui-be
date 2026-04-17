@@ -9,11 +9,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      professional_id: {
+      user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         unique: true,
-        references: { model: "professionals", key: "id" },
+        references: { model: "users", key: "id" },
         onDelete: "CASCADE",
         onUpdate: "CASCADE",
       },

@@ -126,7 +126,6 @@ module.exports = (sequelize, DataTypes) => {
 
   Professional.associate = (models) => {
     Professional.belongsTo(models.User, { foreignKey: "userId", as: "user" });
-    Professional.hasOne(models.TalentId, { foreignKey: "professionalId", as: "talentId" });
     Professional.hasMany(models.WorkLedger, { foreignKey: "professionalId", as: "workLedgers" });
     Professional.hasMany(models.Availability, { foreignKey: "professionalId", as: "availabilities" });
     Professional.hasMany(models.Engagement, { foreignKey: "professionalId", as: "engagements" });

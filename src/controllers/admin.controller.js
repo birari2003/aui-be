@@ -1,6 +1,6 @@
 const asyncHandler = require("../utils/async-handler");
 const { Op } = require("sequelize");
-const { User, Professional, Studio, Institute, Engagement, Booking } = require("../../models");
+const { User, Professional, Studio, Institute, Engagement, Booking, TalentId } = require("../../models");
 
 const listUsers = asyncHandler(async (req, res) => {
   const where = {};
@@ -9,6 +9,7 @@ const listUsers = asyncHandler(async (req, res) => {
 
   const users = await User.findAll({
     where,
+    include: [{ model: TalentId, as: 'talentId' }],
     order: [["createdAt", "DESC"]]
   });
 

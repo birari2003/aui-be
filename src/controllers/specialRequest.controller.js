@@ -1,4 +1,4 @@
-const { SpecialRequest, Professional, Institute, User } = require("../../models");
+const { SpecialRequest, Professional, Institute, User, TalentId } = require("../../models");
 const asyncHandler = require("../utils/async-handler");
 
 const createProfessionalSpecialRequest = asyncHandler(async (req, res) => {
@@ -73,13 +73,27 @@ const getAllSpecialRequests = asyncHandler(async (req, res) => {
         model: Professional,
         as: "professional",
         attributes: ["id", "position"],
-        include: [{ model: User, as: "user", attributes: ["email"] }],
+        include: [
+          { 
+            model: User, 
+            as: "user", 
+            attributes: ["email"],
+            include: [{ model: TalentId, as: "talentId" }]
+          }
+        ],
       },
       {
         model: Institute,
         as: "institute",
         attributes: ["id", "instituteName"],
-        include: [{ model: User, as: "user", attributes: ["email"] }],
+        include: [
+          { 
+            model: User, 
+            as: "user", 
+            attributes: ["email"],
+            include: [{ model: TalentId, as: "talentId" }]
+          }
+        ],
       },
     ],
     order: [["created_at", "DESC"]],
@@ -137,7 +151,14 @@ const shareProfessionalToInstitute = asyncHandler(async (req, res) => {
   const { professionalId, instituteId, message } = req.body;
 
   const professional = await Professional.findByPk(professionalId, {
-    include: [{ model: User, as: "user", attributes: ["email"] }],
+    include: [
+      { 
+        model: User, 
+        as: "user", 
+        attributes: ["email"],
+        include: [{ model: TalentId, as: "talentId" }]
+      }
+    ],
   });
   if (!professional) {
     return res.status(404).json({ message: "Professional not found" });
@@ -152,7 +173,9 @@ const shareProfessionalToInstitute = asyncHandler(async (req, res) => {
     professionalId: professional.id,
     instituteId: institute.id,
     professionalName: professional.fullName || "Professional",
-    professionalPublicUrl: professional.portfolioUrl || professional.showreelUrl,
+    professionalPublicUrl: professional.user?.talentId?.talentCode 
+      ? `/talent/${professional.user.talentId.talentCode}`
+      : (professional.portfolioUrl || professional.showreelUrl),
     message: message || `Admin shared this professional: ${professional.position || ""}`,
     senderRole: "admin",
     status: "pending",

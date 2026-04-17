@@ -1,5 +1,5 @@
 const asyncHandler = require("../utils/async-handler");
-const { Studio, Engagement, TalentBench, HiringRequest, Professional, User } = require("../../models");
+const { Studio, Engagement, TalentBench, HiringRequest, Professional, User, TalentId } = require("../../models");
 const { createLedgerFromEngagement } = require("../services/ledger.service");
 
 async function getStudioByUser(userId) {
@@ -18,9 +18,20 @@ const upsertProfile = asyncHandler(async (req, res) => {
     await studio.update(payload);
   }
 
+  const [talentId] = await TalentId.findOrCreate({
+    where: { userId: req.user.id },
+    defaults: {
+      userId: req.user.id,
+      talentCode: `AUI-STU-${String(req.user.id).padStart(6, "0")}`,
+    },
+  });
+
   return res.status(200).json({
     message: created ? "Studio profile created" : "Studio profile updated",
-    data: studio,
+    data: {
+      studio,
+      talentId
+    },
   });
 });
 

@@ -16,10 +16,10 @@ const upsertProfile = asyncHandler(async (req, res) => {
   const reloaded = await Professional.findOne({ where: { id: professional.id } });
 
   const [talentId] = await TalentId.findOrCreate({
-    where: { professionalId: professional.id },
+    where: { userId: req.user.id },
     defaults: {
-      professionalId: professional.id,
-      talentCode: `AUI-${String(professional.id).padStart(6, "0")}`,
+      userId: req.user.id,
+      talentCode: `AUI-${String(req.user.id).padStart(6, "0")}`,
     },
   });
 
@@ -36,15 +36,44 @@ const getMyProfile = asyncHandler(async (req, res) => {
   const profile = await Professional.findOne({
     where: { userId: req.user.id },
     include: [
-      { model: TalentId, as: "talentId" },
       { model: Availability, as: "availabilities" },
       { model: WorkLedger, as: "workLedgers" },
-      { model: User, as: "user", attributes: ["id", "email", "phone", "status"] },
+      { 
+        model: User, 
+        as: "user", 
+        attributes: ["id", "email", "phone", "status"],
+        include: [{ model: TalentId, as: "talentId" }]
+      },
     ],
   });
 
   if (!profile) {
     return res.status(404).json({ message: "Professional profile not found" });
+  }
+
+  // Ensure TalentId exists
+  if (!profile.user?.talentId) {
+    await TalentId.findOrCreate({
+      where: { userId: req.user.id },
+      defaults: {
+        userId: req.user.id,
+        talentCode: `AUI-${String(req.user.id).padStart(6, "0")}`,
+      },
+    });
+    // Re-fetch to include association
+    return await Professional.findOne({
+      where: { userId: req.user.id },
+      include: [
+        { model: Availability, as: "availabilities" },
+        { model: WorkLedger, as: "workLedgers" },
+        { 
+          model: User, 
+          as: "user", 
+          attributes: ["id", "email", "phone", "status"],
+          include: [{ model: TalentId, as: "talentId" }]
+        },
+      ],
+    }).then(reloaded => res.status(200).json({ data: reloaded }));
   }
 
   return res.status(200).json({ data: profile });
@@ -87,22 +116,28 @@ const getPublicProfile = asyncHandler(async (req, res) => {
     where: { talentCode },
     include: [
       {
-        model: Professional,
-        as: "professional",
+        model: User,
+        as: "user",
         include: [
-          { model: Availability, as: "availabilities" },
-          { model: WorkLedger, as: "workLedgers" },
-          { model: User, as: "user", attributes: ["status"] },
+          {
+            model: Professional,
+            as: "professional",
+            include: [
+              { model: Availability, as: "availabilities" },
+              { model: WorkLedger, as: "workLedgers" },
+              { model: User, as: "user", attributes: ["status"] },
+            ],
+          },
         ],
       },
     ],
   });
 
-  if (!talentId || !talentId.professional) {
+  if (!talentId || !talentId.user?.professional) {
     return res.status(404).json({ message: "Professional profile not found" });
   }
 
-  return res.status(200).json({ data: talentId.professional });
+  return res.status(200).json({ data: talentId.user.professional });
 });
 
 module.exports = {

@@ -1,5 +1,5 @@
 const asyncHandler = require("../utils/async-handler");
-const { Institute, Booking, Professional, TalentId } = require("../../models");
+const { Institute, Booking, Professional, TalentId, User } = require("../../models");
 const { createLedgerFromBooking } = require("../services/ledger.service");
 
 async function getInstituteByUser(userId) {
@@ -21,10 +21,10 @@ const upsertProfile = asyncHandler(async (req, res) => {
   const reloaded = await Institute.findOne({ where: { id: institute.id } });
 
   const [talentId] = await TalentId.findOrCreate({
-    where: { instituteId: institute.id },
+    where: { userId: req.user.id },
     defaults: {
-      instituteId: institute.id,
-      talentCode: `AUI-INST-${String(institute.id).padStart(6, "0")}`,
+      userId: req.user.id,
+      talentCode: `AUI-INST-${String(req.user.id).padStart(6, "0")}`,
     },
   });
 
@@ -41,7 +41,11 @@ const getMyProfile = asyncHandler(async (req, res) => {
   let profile = await Institute.findOne({
     where: { userId: req.user.id },
     include: [
-      { model: TalentId, as: "talentId" },
+      { 
+        model: User, 
+        as: "user", 
+        include: [{ model: TalentId, as: "talentId" }] 
+      },
       { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
     ],
   });
@@ -51,19 +55,23 @@ const getMyProfile = asyncHandler(async (req, res) => {
   }
 
   // Ensure TalentId exists
-  if (!profile.talentId) {
+  if (!profile.user?.talentId) {
     await TalentId.findOrCreate({
-      where: { instituteId: profile.id },
+      where: { userId: req.user.id },
       defaults: {
-        instituteId: profile.id,
-        talentCode: `AUI-INST-${String(profile.id).padStart(6, "0")}`,
+        userId: req.user.id,
+        talentCode: `AUI-INST-${String(req.user.id).padStart(6, "0")}`,
       },
     });
     // Re-fetch to include association
     profile = await Institute.findOne({
       where: { userId: req.user.id },
       include: [
-        { model: TalentId, as: "talentId" },
+        { 
+          model: User, 
+          as: "user", 
+          include: [{ model: TalentId, as: "talentId" }] 
+        },
         { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
       ],
     });
@@ -79,20 +87,26 @@ const getPublicProfile = asyncHandler(async (req, res) => {
     where: { talentCode },
     include: [
       {
-        model: Institute,
-        as: "institute",
+        model: User,
+        as: "user",
         include: [
-          { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
+          {
+            model: Institute,
+            as: "institute",
+            include: [
+              { model: Booking, as: "bookings", include: [{ model: Professional, as: "professional" }] },
+            ],
+          },
         ],
       },
     ],
   });
 
-  if (!talentId || !talentId.institute) {
+  if (!talentId || !talentId.user?.institute) {
     return res.status(404).json({ message: "Institute profile not found" });
   }
 
-  return res.status(200).json({ data: talentId.institute });
+  return res.status(200).json({ data: talentId.user.institute });
 });
 
 const createBooking = asyncHandler(async (req, res) => {

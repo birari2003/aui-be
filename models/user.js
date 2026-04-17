@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasOne(models.Professional, { foreignKey: "userId", as: "professional" });
     User.hasOne(models.Studio, { foreignKey: "userId", as: "studio" });
     User.hasOne(models.Institute, { foreignKey: "userId", as: "institute" });
+    User.hasOne(models.TalentId, { foreignKey: "userId", as: "talentId" });
     User.hasMany(models.Reel, { foreignKey: "userId", as: "reels" });
     User.hasMany(models.OtpVerification, { foreignKey: "userId", as: "otps" });
   };
