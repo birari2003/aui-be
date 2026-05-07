@@ -80,6 +80,8 @@ module.exports = (sequelize, DataTypes) => {
     Studio.belongsTo(models.User, { foreignKey: "userId", as: "user" });
     Studio.hasMany(models.Engagement, { foreignKey: "studioId", as: "engagements" });
     Studio.hasMany(models.TalentBench, { foreignKey: "studioId", as: "talentBench" });
+    Studio.hasMany(models.StudioRequestProfessional, { foreignKey: "studioId", as: "professionalRequests" });
+    Studio.hasMany(models.StudioJobPosting, { foreignKey: "studioId", as: "jobPostings" });
     Studio.hasMany(models.HiringRequest, { foreignKey: "studioId", as: "hiringRequests" });
   };
 

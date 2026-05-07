@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const asyncHandler = require("../utils/async-handler");
-const { User, OtpVerification, Professional, Studio, Institute, sequelize } = require("../../models");
+const { User, OtpVerification, Professional, Studio, Institute, TalentId, sequelize } = require("../../models");
 const { generateToken } = require("../utils/token.util");
 const { sendOtpEmail } = require("../services/mail.service");
 
@@ -23,18 +23,27 @@ const register = asyncHandler(async (req, res) => {
         email,
         ...profileData 
       }, { transaction: t });
+      // Create talent id for professional
+      const talentCode = `AUI-${String(user.id).padStart(6, "0")}`;
+      await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
     } else if (role === 'studio') {
       profile = await Studio.create({ 
         userId: user.id, 
         email,
         ...profileData 
       }, { transaction: t });
+      // Create talent id for studio
+      const talentCode = `AUI-STU-${String(user.id).padStart(6, "0")}`;
+      await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
     } else if (role === 'institute') {
       profile = await Institute.create({ 
         userId: user.id, 
         email,
         ...profileData 
       }, { transaction: t });
+      // Create talent id for institute
+      const talentCode = `AUI-INST-${String(user.id).padStart(6, "0")}`;
+      await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
     }
 
     return { user, profile };

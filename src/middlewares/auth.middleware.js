@@ -12,7 +12,9 @@ async function protect(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(decoded.userId);
+    const user = await User.findByPk(decoded.userId, {
+      include: [{ model: require("../../models").TalentId, as: 'talentId' }]
+    });
 
     if (!user) {
       return res.status(401).json({ message: "Unauthorized: invalid user" });
@@ -27,6 +29,32 @@ async function protect(req, res, next) {
   } catch (_error) {
     return res.status(401).json({ message: "Unauthorized: invalid token" });
   }
+}
+
+async function optionalAuth(req, res, next) {
+  const token = req.headers.authorization?.startsWith("Bearer ")
+    ? req.headers.authorization.split(" ")[1]
+    : null;
+
+  if (!token) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.userId);
+
+    if (user && user.status === "approved") {
+      req.user = user;
+    } else {
+      req.user = null;
+    }
+  } catch (_error) {
+    req.user = null;
+  }
+
+  return next();
 }
 
 function authorizeRoles(...roles) {
@@ -47,6 +75,7 @@ function authorizeAdmin(req, res, next) {
 
 module.exports = {
   protect,
+  optionalAuth,
   authorizeRoles,
   authorizeAdmin,
 };

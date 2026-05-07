@@ -9,7 +9,9 @@ const adminRoutes = require("./admin.routes");
 const reelRoutes = require("./reel.routes");
 const collaborationRoutes = require("./collaboration.routes");
 const specialRequestRoutes = require("./specialRequest.routes");
-
+const publicProfileRoutes = require("./publicProfile.routes");
+const studioPublicProfileRoutes = require("./studioProfile.routes");
+const institutePublicProfileRoutes = require("./instituteProfile.routes");
 
 const router = express.Router();
 
@@ -22,6 +24,9 @@ router.use("/admin", adminRoutes);
 router.use("/reels", reelRoutes);
 router.use("/collaboration", collaborationRoutes);
 router.use("/special-requests", specialRequestRoutes);
+router.use("/public-profile", publicProfileRoutes);
+router.use("/studio-public-profile", studioPublicProfileRoutes);
+router.use("/institute-public-profile", institutePublicProfileRoutes);
 
 
 module.exports = router;

@@ -131,6 +131,7 @@ module.exports = (sequelize, DataTypes) => {
     Professional.hasMany(models.Engagement, { foreignKey: "professionalId", as: "engagements" });
     Professional.hasMany(models.Booking, { foreignKey: "professionalId", as: "bookings" });
     Professional.hasMany(models.TalentBench, { foreignKey: "professionalId", as: "savedByStudios" });
+    Professional.hasMany(models.StudioRequestProfessional, { foreignKey: "professionalId", as: "studioRequests" });
   };
 
   return Professional;

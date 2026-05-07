@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const asyncHandler = require("../utils/async-handler");
-const { Professional, User, Availability, TalentId, Institute } = require("../../models");
+const { Professional, User, Availability, TalentId, Institute, StudioJobPosting, Studio, TalentId: StudioTalentId, TalentBench } = require("../../models");
 
 const searchProfessionals = asyncHandler(async (req, res) => {
   const {
@@ -34,6 +34,11 @@ const searchProfessionals = asyncHandler(async (req, res) => {
       as: "user", 
       attributes: ["id", "email", "status"],
       include: [{ model: TalentId, as: "talentId" }]
+    },
+    {
+      model: TalentBench,
+      as: "savedByStudios",
+      attributes: ["id"]
     },
   ];
 
@@ -79,7 +84,38 @@ const searchInstitutes = asyncHandler(async (req, res) => {
   return res.status(200).json({ data: rows });
 });
 
+const searchStudioJobPostings = asyncHandler(async (req, res) => {
+  const { title, projectType, status } = req.query;
+
+  const where = {};
+  if (title) where.title = { [Op.like]: `%${title}%` };
+  if (projectType) where.projectType = { [Op.like]: `%${projectType}%` };
+  if (status) where.status = status;
+
+  const rows = await StudioJobPosting.findAll({
+    where,
+    include: [
+      {
+        model: Studio,
+        as: "studio",
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "email", "status"],
+            include: [{ model: StudioTalentId, as: "talentId" }],
+          },
+        ],
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return res.status(200).json({ data: rows });
+});
+
 module.exports = {
   searchProfessionals,
   searchInstitutes,
+  searchStudioJobPostings,
 };

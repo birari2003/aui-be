@@ -18,4 +18,11 @@ router.get(
   controller.searchInstitutes
 );
 
+router.get(
+  "/studio-job-postings",
+  protect,
+  authorizeRoles("professional", "studio", "institute"),
+  controller.searchStudioJobPostings
+);
+
 module.exports = router;
