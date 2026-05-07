@@ -8,6 +8,21 @@ const formatStudioProfile = (profile) => {
   if (profile.user && profile.user.talentId) {
     data.talentCode = profile.user.talentId.talentCode;
   }
+
+  // Ensure JSON fields are parsed if they come back as strings
+  const parseJSON = (val, defaultVal = []) => {
+    if (typeof val === 'string') {
+      try { return JSON.parse(val); } catch (e) { return defaultVal; }
+    }
+    return val || defaultVal;
+  };
+
+  data.whatWeDo = parseJSON(data.whatWeDo);
+  data.whyWorkWithUs = parseJSON(data.whyWorkWithUs);
+  data.extraVideos = parseJSON(data.extraVideos);
+  data.projects = parseJSON(data.projects);
+  data.clients = parseJSON(data.clients);
+  data.socialLinks = parseJSON(data.socialLinks, {});
   
   return data;
 };

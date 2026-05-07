@@ -7,6 +7,21 @@ const formatInstituteProfile = (profile) => {
   if (profile.user && profile.user.talentId) {
     data.talentCode = profile.user.talentId.talentCode;
   }
+
+  // Ensure JSON fields are parsed if they come back as strings
+  const parseJSON = (val, defaultVal = []) => {
+    if (typeof val === 'string') {
+      try { return JSON.parse(val); } catch (e) { return defaultVal; }
+    }
+    return val || defaultVal;
+  };
+
+  data.features = parseJSON(data.features);
+  data.programs = parseJSON(data.programs);
+  data.whyChooseUs = parseJSON(data.whyChooseUs);
+  data.industryPartners = parseJSON(data.industryPartners);
+  data.testimonials = parseJSON(data.testimonials);
+  data.socialLinks = parseJSON(data.socialLinks, {});
   
   return data;
 };

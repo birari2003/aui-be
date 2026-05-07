@@ -17,6 +17,12 @@ async function getStudioByUser(userId) {
   return Studio.findOne({ where: { userId } });
 }
 
+const getProfile = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  // Return 200 even if not found, to avoid frontend fetch errors for new profiles
+  return res.status(200).json({ ok: true, data: studio || null });
+});
+
 const upsertProfile = asyncHandler(async (req, res) => {
   const payload = req.body;
 
@@ -308,6 +314,7 @@ const createHiringRequest = asyncHandler(async (req, res) => {
 });
 
 module.exports = {
+  getProfile,
   upsertProfile,
   createEngagement,
   updateEngagementStatus,

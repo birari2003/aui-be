@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.use(protect, authorizeRoles("studio"));
 
+router.get("/profile", controller.getProfile);
 router.post("/profile", controller.upsertProfile);
 router.post("/engagements", controller.createEngagement);
 router.patch("/engagements/:engagementId/status", controller.updateEngagementStatus);
