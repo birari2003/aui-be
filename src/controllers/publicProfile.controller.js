@@ -3,8 +3,19 @@ const { PublicProfessionalProfile, User, TalentId, Professional } = require("../
 const formatProfile = (profile) => {
   if (!profile) return null;
   const p = profile.toJSON ? profile.toJSON() : profile;
+  
+  // Ensure JSON fields are parsed if they come back as strings
+  const parseJSON = (val) => {
+    if (typeof val === 'string') {
+      try { return JSON.parse(val); } catch (e) { return []; }
+    }
+    return val || [];
+  };
+
   return {
     ...p,
+    experienceTimeline: parseJSON(p.experienceTimeline),
+    workLedger: parseJSON(p.workLedger),
     showreel: {
       type: p.showreelType,
       url: p.showreelUrl,
@@ -153,20 +164,26 @@ const upsertPublicProfile = async (req, res) => {
     });
 
     if (!created) {
+      console.log("Updating existing profile for userId:", userId);
       await profile.update({
-        auiInsight,
+        auiInsight: auiInsight || profile.auiInsight,
         experienceTimeline: parsedTimeline,
-        showreelType: showreelType || "youtube",
-        showreelUrl: updatedShowreelUrl,
-        showreelTitle,
-        showreelDuration,
+        showreelType: showreelType || profile.showreelType,
+        showreelUrl: updatedShowreelUrl || profile.showreelUrl,
+        showreelTitle: showreelTitle || profile.showreelTitle,
+        showreelDuration: showreelDuration || profile.showreelDuration,
         workLedger: parsedWorkLedger,
-        profileImage: updatedProfileImage,
-        workLedgerImage: updatedWorkLedgerImage,
+        profileImage: updatedProfileImage || profile.profileImage,
+        workLedgerImage: updatedWorkLedgerImage || profile.workLedgerImage,
       });
     }
 
-    res.status(200).json({ ok: true, message: "Profile updated successfully", data: formatProfile(profile) });
+    const finalProfile = await PublicProfessionalProfile.findOne({ where: { userId } });
+    res.status(200).json({ 
+      ok: true, 
+      message: "Profile updated successfully", 
+      data: formatProfile(finalProfile) 
+    });
   } catch (error) {
     console.error("UpsertPublicProfile Error Detail:", error);
     res.status(500).json({ 
