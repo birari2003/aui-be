@@ -51,6 +51,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "public_professional_profiles",
+      underscored: true,
     }
   );
 
