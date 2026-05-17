@@ -17,29 +17,31 @@ const register = asyncHandler(async (req, res) => {
 
     let profile;
     if (role === 'professional') {
-      profile = await Professional.create({ 
-        userId: user.id, 
+      profile = await Professional.create({
+        userId: user.id,
         fullName: fullName || profileData.fullName,
         email,
-        ...profileData 
+        ...profileData
       }, { transaction: t });
       // Create talent id for professional
-      const talentCode = `AUI-${String(user.id).padStart(6, "0")}`;
+      const exp = String(profileData.experienceYears || 0).padStart(2, "0");
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      const talentCode = `AUI-${exp}X-${rand}`;
       await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
     } else if (role === 'studio') {
-      profile = await Studio.create({ 
-        userId: user.id, 
+      profile = await Studio.create({
+        userId: user.id,
         email,
-        ...profileData 
+        ...profileData
       }, { transaction: t });
       // Create talent id for studio
       const talentCode = `AUI-STU-${String(user.id).padStart(6, "0")}`;
       await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
     } else if (role === 'institute') {
-      profile = await Institute.create({ 
-        userId: user.id, 
+      profile = await Institute.create({
+        userId: user.id,
         email,
-        ...profileData 
+        ...profileData
       }, { transaction: t });
       // Create talent id for institute
       const talentCode = `AUI-INST-${String(user.id).padStart(6, "0")}`;

@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       position: {
-        type: DataTypes.ENUM("artist", "lead", "supervisor", "director", "other"),
+        type: DataTypes.STRING(100),
         allowNull: false,
       },
       productionType: {
