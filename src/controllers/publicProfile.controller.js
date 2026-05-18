@@ -1,4 +1,25 @@
 const { PublicProfessionalProfile, User, TalentId, Professional, TalentBench } = require("../../models");
+const fs = require('fs');
+const path = require('path');
+
+const fileToBase64 = (filePath) => {
+  if (!filePath) return '';
+  try {
+    const fullPath = path.resolve(filePath);
+    if (fs.existsSync(fullPath)) {
+      const bitmap = fs.readFileSync(fullPath);
+      const ext = path.extname(fullPath).toLowerCase();
+      let mimeType = 'image/jpeg';
+      if (ext === '.png') mimeType = 'image/png';
+      else if (ext === '.gif') mimeType = 'image/gif';
+      else if (ext === '.webp') mimeType = 'image/webp';
+      return `data:${mimeType};base64,${Buffer.from(bitmap).toString('base64')}`;
+    }
+  } catch (err) {
+    console.error("Error converting file to base64:", err);
+  }
+  return '';
+};
 
 const formatProfile = (profile) => {
   if (!profile) return null;
@@ -23,6 +44,7 @@ const formatProfile = (profile) => {
       duration: p.showreelDuration,
     },
     profileImage: p.profileImage,
+    profileImageBase64: fileToBase64(p.profileImage),
     workLedgerImage: p.workLedgerImage,
   };
 };
@@ -60,6 +82,9 @@ const getPublicProfile = async (req, res) => {
     const userData = user.toJSON();
     if (userData.publicProfile) {
       userData.publicProfile = formatProfile(userData.publicProfile);
+    }
+    if (userData.professional) {
+      userData.professional.avatarBase64 = fileToBase64(userData.professional.avatarUrl);
     }
 
     res.status(200).json({ ok: true, data: userData });
