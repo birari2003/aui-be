@@ -1,4 +1,4 @@
-const { PublicProfessionalProfile, User, TalentId, Professional } = require("../../models");
+const { PublicProfessionalProfile, User, TalentId, Professional, TalentBench } = require("../../models");
 
 const formatProfile = (profile) => {
   if (!profile) return null;
@@ -38,7 +38,17 @@ const getPublicProfile = async (req, res) => {
           as: "talentId",
           where: { talentCode }
         },
-        { model: Professional, as: "professional" },
+        { 
+          model: Professional, 
+          as: "professional",
+          include: [
+            {
+              model: TalentBench,
+              as: "savedByStudios",
+              attributes: ["id"]
+            }
+          ]
+        },
         { model: PublicProfessionalProfile, as: "publicProfile" }
       ]
     });
