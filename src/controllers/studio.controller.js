@@ -10,8 +10,93 @@ const {
   User,
   TalentId,
   Notification,
+  JobApplication,
 } = require("../../models");
 const { createLedgerFromEngagement } = require("../services/ledger.service");
+
+const listJobApplications = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const { jobPostingId, status } = req.query;
+
+  const where = { studioId: studio.id };
+  if (jobPostingId) where.jobPostingId = jobPostingId;
+  if (status) where.status = status;
+
+  const applications = await JobApplication.findAll({
+    where,
+    include: [
+      {
+        model: Professional,
+        as: "professional",
+        include: [
+          { 
+            model: User, 
+            as: "user", 
+            attributes: ["email", "phone"],
+            include: [{ model: TalentId, as: "talentId" }]
+          }
+        ],
+      },
+      { model: StudioJobPosting, as: "jobPosting" },  
+    ],
+    order: [["updatedAt", "DESC"]],
+  });
+
+  return res.status(200).json({ data: applications });
+});
+
+const updateApplicationStatus = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const application = await JobApplication.findOne({
+    where: { id: req.params.applicationId, studioId: studio.id },
+  });
+
+  if (!application) {
+    return res.status(404).json({ message: "Application not found" });
+  }
+
+  const { status, contactInfoShared } = req.body;
+  const updates = {};
+  if (status) updates.status = status;
+  if (contactInfoShared !== undefined) updates.contactInfoShared = contactInfoShared;
+
+  await application.update(updates);
+
+  return res.status(200).json({ message: "Application status updated", data: application });
+});
+
+const finalizeAgreement = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const application = await JobApplication.findOne({
+    where: { id: req.params.applicationId, studioId: studio.id },
+  });
+
+  if (!application) {
+    return res.status(404).json({ message: "Application not found" });
+  }
+
+  const { agreementDetails } = req.body;
+
+  await application.update({
+    agreementDetails,
+    status: "agreement",
+    artistDecision: "pending",
+  });
+
+  return res.status(200).json({ message: "Agreement finalized and sent to artist", data: application });
+});
 
 async function getStudioByUser(userId) {
   return Studio.findOne({ where: { userId } });
@@ -175,42 +260,48 @@ const createStudioRequestProfessional = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Studio profile not found" });
   }
 
-  const {
-    professionalId,
-    projectTimeline,
-    productionType,
-    engagementBrief,
-    proposedBudget,
-    startDate,
-  } = req.body;
+  const { professionalId, professionalIds, ...payload } = req.body;
 
-  const professional = await Professional.findByPk(professionalId);
-  if (!professional) {
-    return res.status(404).json({ message: "Professional not found" });
+  // Normalize to an array of professional IDs
+  const targetIds = professionalIds || (professionalId ? [professionalId] : []);
+
+  if (targetIds.length === 0) {
+    return res.status(400).json({ message: "No professionals selected" });
   }
 
-  const inBench = await TalentBench.findOne({
+  // Check if all professionals are in the bench
+  const benchEntries = await TalentBench.findAll({
     where: {
-    studioId: studio.id,
-      professionalId,
+      studioId: studio.id,
+      professionalId: targetIds,
     },
   });
 
-  if (!inBench) {
-    return res.status(400).json({ message: "Please add talent to bench before requesting engagement" });
+  const benchedIds = new Set(benchEntries.map((b) => b.professionalId));
+  const missingFromBench = targetIds.filter((id) => !benchedIds.has(Number(id)));
+
+  if (missingFromBench.length > 0) {
+    return res.status(400).json({
+      message: "Some professionals are not in your bench",
+      missingFromBench,
+    });
   }
 
-  const row = await StudioRequestProfessional.create({
-    studioId: studio.id,
-    professionalId,
-    projectTimeline,
-    productionType,
-    engagementBrief,
-    proposedBudget,
-    startDate,
-  });
+  // Create requests for each professional
+  const requests = await Promise.all(
+    targetIds.map((pid) =>
+      StudioRequestProfessional.create({
+        ...payload,
+        studioId: studio.id,
+        professionalId: pid,
+      })
+    )
+  );
 
-  return res.status(201).json({ message: "Engagement request sent", data: row });
+  return res.status(201).json({
+    message: targetIds.length > 1 ? "Engagement requests sent to multiple artists" : "Engagement request sent",
+    data: requests,
+  });
 });
 
 const listStudioRequestProfessional = asyncHandler(async (req, res) => {
@@ -248,17 +339,49 @@ const createStudioJobPosting = asyncHandler(async (req, res) => {
   }
 
   const row = await StudioJobPosting.create({
+    ...req.body,
     studioId: studio.id,
-    title: req.body.title,
-    projectType: req.body.projectType,
-    experienceRequired: req.body.experienceRequired,
-    artistCount: req.body.artistCount,
-    startDate: req.body.startDate,
-    description: req.body.description,
-    status: req.body.status || "open",
   });
 
   return res.status(201).json({ message: "Job posted successfully", data: row });
+});
+
+const updateStudioJobPosting = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const row = await StudioJobPosting.findOne({
+    where: { id: req.params.id, studioId: studio.id },
+  });
+
+  if (!row) {
+    return res.status(404).json({ message: "Job posting not found" });
+  }
+
+  await row.update(req.body);
+
+  return res.status(200).json({ message: "Job posting updated", data: row });
+});
+
+const deleteStudioJobPosting = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const row = await StudioJobPosting.findOne({
+    where: { id: req.params.id, studioId: studio.id },
+  });
+
+  if (!row) {
+    return res.status(404).json({ message: "Job posting not found" });
+  }
+
+  await row.destroy();
+
+  return res.status(200).json({ message: "Job posting deleted successfully" });
 });
 
 const listStudioJobPostings = asyncHandler(async (req, res) => {
@@ -313,6 +436,36 @@ const createHiringRequest = asyncHandler(async (req, res) => {
   return res.status(201).json({ message: "Hiring request posted", data: row });
 });
 
+const uploadJobPostingAttachments = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const row = await StudioJobPosting.findOne({
+    where: { id: req.params.id, studioId: studio.id },
+  });
+
+  if (!row) {
+    return res.status(404).json({ message: "Job posting not found" });
+  }
+
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ message: "No files uploaded" });
+  }
+
+  const newPaths = req.files.map((f) => `/${f.path}`);
+  const existing = row.attachments || [];
+  const merged = [...existing, ...newPaths];
+
+  await row.update({ attachments: merged });
+
+  return res.status(200).json({
+    message: "Attachments uploaded successfully",
+    data: { attachments: merged },
+  });
+});
+
 module.exports = {
   getProfile,
   upsertProfile,
@@ -325,6 +478,12 @@ module.exports = {
   createStudioRequestProfessional,
   listStudioRequestProfessional,
   createStudioJobPosting,
+  updateStudioJobPosting,
+  deleteStudioJobPosting,
   listStudioJobPostings,
   createHiringRequest,
+  uploadJobPostingAttachments,
+  listJobApplications,
+  updateApplicationStatus,
+  finalizeAgreement,
 };

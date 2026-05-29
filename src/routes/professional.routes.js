@@ -17,4 +17,9 @@ router.get("/studio-job-postings", controller.listStudioJobPostings);
 router.get("/notifications", controller.getMyNotifications);
 router.patch("/notifications/:id/read", controller.markNotificationAsRead);
 
+// Applications & Hiring Flow
+router.post("/applications", controller.applyForJob);
+router.get("/applications", controller.listMyApplications);
+router.patch("/applications/:applicationId/respond-agreement", controller.respondToAgreement);
+
 module.exports = router;

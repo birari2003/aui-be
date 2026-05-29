@@ -11,19 +11,55 @@ module.exports = (sequelize, DataTypes) => {
       professionalId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+          },
+      roleTitle: {
+        type: DataTypes.STRING(150),
+        allowNull: true,
+      },
+      productionType: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      projectFormat: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      opportunityOverview: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      roleRequirements: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      startAvailability: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      workMode: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      location: {
+        type: DataTypes.STRING(150),
+        allowNull: true,
+      },
+      includeCompensation: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      verificationFields: {
+        type: DataTypes.JSON,
+        allowNull: true,
       },
       projectTimeline: {
         type: DataTypes.STRING(100),
-        allowNull: false,
-      },
-      productionType: {
-        type: DataTypes.ENUM("film", "tv", "web", "ads", "other"),
-        allowNull: false,
-        defaultValue: "film",
+        allowNull: true,
       },
       engagementBrief: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       proposedBudget: {
         type: DataTypes.STRING(100),
@@ -41,6 +77,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "studio_request_professional",
+      underscored: true,
     }
   );
 

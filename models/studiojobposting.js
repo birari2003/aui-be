@@ -38,9 +38,71 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: "open",
       },
+      productionType: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      projectFormat: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      engagementType: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      workMode: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      locationPreference: {
+        type: DataTypes.STRING(150),
+        allowNull: true,
+      },
+      timeZonePreference: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      requiredAvailability: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      opportunityOverview: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      softwareTools: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
+      requiredExperience: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      internalNotes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      verificationFields: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
+      filledCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+      },
+      contractDuration: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      attachments: {
+        type: DataTypes.JSON,
+        allowNull: true,
+      },
     },
     {
       tableName: "studio_job_postings",
+      underscored: true,
     }
   );
 
