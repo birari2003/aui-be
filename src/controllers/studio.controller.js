@@ -395,7 +395,25 @@ const listStudioJobPostings = asyncHandler(async (req, res) => {
     order: [["createdAt", "DESC"]],
   });
 
-  return res.status(200).json({ data: rows });
+  const data = await Promise.all(
+    rows.map(async (row) => {
+      const count = await JobApplication.count({
+        where: {
+          jobPostingId: row.id,
+          status: "hired",
+        },
+      });
+      if (row.filledCount !== count) {
+        await row.update({ filledCount: count });
+      }
+      return {
+        ...row.toJSON(),
+        filledCount: count,
+      };
+    })
+  );
+
+  return res.status(200).json({ data });
 });
 
 const listTalentBench = asyncHandler(async (req, res) => {

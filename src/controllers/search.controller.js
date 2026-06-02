@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const asyncHandler = require("../utils/async-handler");
-const { Professional, User, Availability, TalentId, Institute, StudioJobPosting, Studio, TalentId: StudioTalentId, TalentBench } = require("../../models");
+const { Professional, User, Availability, TalentId, Institute, StudioJobPosting, Studio, TalentId: StudioTalentId, TalentBench, JobApplication } = require("../../models");
 
 const searchProfessionals = asyncHandler(async (req, res) => {
   const {
@@ -111,7 +111,25 @@ const searchStudioJobPostings = asyncHandler(async (req, res) => {
     order: [["createdAt", "DESC"]],
   });
 
-  return res.status(200).json({ data: rows });
+  const data = await Promise.all(
+    rows.map(async (row) => {
+      const count = await JobApplication.count({
+        where: {
+          jobPostingId: row.id,
+          status: "hired",
+        },
+      });
+      if (row.filledCount !== count) {
+        await row.update({ filledCount: count });
+      }
+      return {
+        ...row.toJSON(),
+        filledCount: count,
+      };
+    })
+  );
+
+  return res.status(200).json({ data });
 });
 
 module.exports = {

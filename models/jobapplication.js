@@ -47,6 +47,74 @@ module.exports = (sequelize, DataTypes) => {
     {
       tableName: "job_applications",
       underscored: true,
+      hooks: {
+        afterCreate: async (instance, options) => {
+          if (instance.jobPostingId) {
+            try {
+              const count = await sequelize.models.JobApplication.count({
+                where: {
+                  jobPostingId: instance.jobPostingId,
+                  status: "hired",
+                },
+                transaction: options.transaction,
+              });
+              await sequelize.models.StudioJobPosting.update(
+                { filledCount: count },
+                {
+                  where: { id: instance.jobPostingId },
+                  transaction: options.transaction,
+                }
+              );
+            } catch (err) {
+              console.error("Error in JobApplication afterCreate hook:", err);
+            }
+          }
+        },
+        afterUpdate: async (instance, options) => {
+          if (instance.jobPostingId) {
+            try {
+              const count = await sequelize.models.JobApplication.count({
+                where: {
+                  jobPostingId: instance.jobPostingId,
+                  status: "hired",
+                },
+                transaction: options.transaction,
+              });
+              await sequelize.models.StudioJobPosting.update(
+                { filledCount: count },
+                {
+                  where: { id: instance.jobPostingId },
+                  transaction: options.transaction,
+                }
+              );
+            } catch (err) {
+              console.error("Error in JobApplication afterUpdate hook:", err);
+            }
+          }
+        },
+        afterDestroy: async (instance, options) => {
+          if (instance.jobPostingId) {
+            try {
+              const count = await sequelize.models.JobApplication.count({
+                where: {
+                  jobPostingId: instance.jobPostingId,
+                  status: "hired",
+                },
+                transaction: options.transaction,
+              });
+              await sequelize.models.StudioJobPosting.update(
+                { filledCount: count },
+                {
+                  where: { id: instance.jobPostingId },
+                  transaction: options.transaction,
+                }
+              );
+            } catch (err) {
+              console.error("Error in JobApplication afterDestroy hook:", err);
+            }
+          }
+        },
+      },
     }
   );
 
