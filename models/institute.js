@@ -70,6 +70,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(500),
         allowNull: true,
       },
+      servicesRequired: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
+      officialLinks: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       requirements: {
         type: DataTypes.TEXT,
         allowNull: true,
