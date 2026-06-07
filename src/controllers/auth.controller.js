@@ -2,7 +2,7 @@ const { Op } = require("sequelize");
 const asyncHandler = require("../utils/async-handler");
 const { User, OtpVerification, Professional, Studio, Institute, TalentId, sequelize } = require("../../models");
 const { generateToken } = require("../utils/token.util");
-const { sendOtpEmail } = require("../services/mail.service");
+const { sendOtpEmail, sendPendingEmail } = require("../services/mail.service");
 
 const register = asyncHandler(async (req, res) => {
   const { email, phone, role, fullName, profileData } = req.body;
@@ -49,6 +49,21 @@ const register = asyncHandler(async (req, res) => {
     }
 
     return { user, profile };
+  });
+
+  // Determine name based on role
+  let name = "";
+  if (role === 'professional') {
+    name = result.profile.fullName;
+  } else if (role === 'studio') {
+    name = result.profile.studioName;
+  } else if (role === 'institute') {
+    name = result.profile.instituteName;
+  }
+
+  // Send pending email asynchronously without awaiting to ensure rapid API response
+  sendPendingEmail(email, name, role).catch((err) => {
+    console.error(`Failed to send registration pending email to ${email}:`, err);
   });
 
   return res.status(201).json({

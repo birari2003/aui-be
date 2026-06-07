@@ -1,6 +1,7 @@
 const asyncHandler = require("../utils/async-handler");
 const { Op } = require("sequelize");
 const { User, Professional, Studio, Institute, Engagement, Booking, TalentId } = require("../../models");
+const { sendStatusUpdateEmail } = require("../services/mail.service");
 
 const listUsers = asyncHandler(async (req, res) => {
   const where = {};
@@ -47,12 +48,43 @@ const listUsers = asyncHandler(async (req, res) => {
 });
 
 const updateUserStatus = asyncHandler(async (req, res) => {
-  const user = await User.findByPk(req.params.userId);
+  const user = await User.findByPk(req.params.userId, {
+    include: [
+      { model: Professional, as: "professional" },
+      { model: Studio, as: "studio" },
+      { model: Institute, as: "institute" },
+      { model: TalentId, as: "talentId" },
+    ],
+  });
+
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
 
-  await user.update({ status: req.body.status });
+  const oldStatus = user.status;
+  const newStatus = req.body.status;
+
+  await user.update({ status: newStatus });
+
+  if (oldStatus !== newStatus && (newStatus === "approved" || newStatus === "rejected")) {
+    let name = "";
+    if (user.role === "professional" && user.professional) {
+      name = user.professional.fullName;
+    } else if (user.role === "studio" && user.studio) {
+      name = user.studio.studioName;
+    } else if (user.role === "institute" && user.institute) {
+      name = user.institute.instituteName;
+    } else {
+      name = user.email;
+    }
+
+    const talentCode = user.talentId ? user.talentId.talentCode : null;
+
+    sendStatusUpdateEmail(user.email, name, user.role, newStatus, talentCode).catch((err) => {
+      console.error(`Failed to send status update email to ${user.email}:`, err);
+    });
+  }
+
   return res.status(200).json({ message: "User status updated", data: user });
 });
 
