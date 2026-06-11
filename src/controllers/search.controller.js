@@ -15,7 +15,16 @@ const searchProfessionals = asyncHandler(async (req, res) => {
 
   const where = {};
 
-  if (skill) where.primarySkill = { [Op.like]: `%${skill}%` };
+  if (skill) {
+    const skillWords = skill.trim().split(/\s+/).filter(Boolean);
+    if (skillWords.length === 1) {
+      where.primarySkill = { [Op.like]: `%${skillWords[0]}%` };
+    } else {
+      where[Op.or] = skillWords.map((word) => ({
+        primarySkill: { [Op.like]: `%${word}%` },
+      }));
+    }
+  }
   if (role) where.position = role;
   if (level) where.level = level;
 
