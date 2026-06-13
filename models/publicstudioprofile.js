@@ -46,22 +46,27 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       projectsCompleted: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
+        type: DataTypes.STRING,
+        defaultValue: '0',
       },
       artistsHired: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
+        type: DataTypes.STRING,
+        defaultValue: '0',
       },
       yearsActive: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
+        type: DataTypes.STRING,
+        defaultValue: '0',
       },
       awardsWon: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
+        type: DataTypes.STRING,
+        defaultValue: '0',
       },
       whatWeDo: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        defaultValue: [],
+      },
+      services: {
         type: DataTypes.JSON,
         allowNull: true,
         defaultValue: [],

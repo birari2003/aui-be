@@ -99,7 +99,10 @@ const finalizeAgreement = asyncHandler(async (req, res) => {
 });
 
 async function getStudioByUser(userId) {
-  return Studio.findOne({ where: { userId } });
+  return Studio.findOne({
+    where: { userId },
+    include: [{ model: User, as: "user", attributes: ["email", "phone"] }]
+  });
 }
 
 const getProfile = asyncHandler(async (req, res) => {
@@ -120,6 +123,10 @@ const upsertProfile = asyncHandler(async (req, res) => {
     await studio.update(payload);
   }
 
+  if (payload.phone !== undefined) {
+    await User.update({ phone: payload.phone }, { where: { id: req.user.id } });
+  }
+
   const [talentId] = await TalentId.findOrCreate({
     where: { userId: req.user.id },
     defaults: {
@@ -128,10 +135,13 @@ const upsertProfile = asyncHandler(async (req, res) => {
     },
   });
 
+  // Fetch updated studio info with user association to return in response
+  const updatedStudio = await getStudioByUser(req.user.id);
+
   return res.status(200).json({
     message: created ? "Studio profile created" : "Studio profile updated",
     data: {
-      studio,
+      studio: updatedStudio,
       talentId
     },
   });

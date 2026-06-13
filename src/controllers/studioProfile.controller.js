@@ -9,6 +9,16 @@ const formatStudioProfile = (profile) => {
     data.talentCode = profile.user.talentId.talentCode;
   }
 
+  if (profile.user) {
+    if (profile.user.studio) {
+      data.phone = profile.user.studio.phone || data.phone;
+      data.email = profile.user.studio.email || profile.user.email || data.email;
+    } else {
+      data.phone = profile.user.phone || data.phone;
+      data.email = profile.user.email || data.email;
+    }
+  }
+
   // Ensure JSON fields are parsed if they come back as strings
   const parseJSON = (val, defaultVal = []) => {
     if (typeof val === 'string') {
@@ -18,6 +28,7 @@ const formatStudioProfile = (profile) => {
   };
 
   data.whatWeDo = parseJSON(data.whatWeDo);
+  data.services = parseJSON(data.services);
   data.whyWorkWithUs = parseJSON(data.whyWorkWithUs);
   data.extraVideos = parseJSON(data.extraVideos);
   data.projects = parseJSON(data.projects);
@@ -100,6 +111,7 @@ const upsertStudioProfile = async (req, res) => {
 
     // Parse JSON fields
     let whatWeDo = typeof body.whatWeDo === 'string' ? JSON.parse(body.whatWeDo) : (body.whatWeDo || []);
+    let services = typeof body.services === 'string' ? JSON.parse(body.services) : (body.services || []);
     let whyWorkWithUs = typeof body.whyWorkWithUs === 'string' ? JSON.parse(body.whyWorkWithUs) : (body.whyWorkWithUs || []);
     let extraVideos = typeof body.extraVideos === 'string' ? JSON.parse(body.extraVideos) : (body.extraVideos || []);
     let projects = typeof body.projects === 'string' ? JSON.parse(body.projects) : (body.projects || []);
@@ -151,11 +163,12 @@ const upsertStudioProfile = async (req, res) => {
       phone: body.phone,
       website: body.website,
       about: body.about,
-      projectsCompleted: parseInt(body.projectsCompleted) || 0,
-      artistsHired: parseInt(body.artistsHired) || 0,
-      yearsActive: parseInt(body.yearsActive) || 0,
-      awardsWon: parseInt(body.awardsWon) || 0,
+      projectsCompleted: body.projectsCompleted || '0',
+      artistsHired: body.artistsHired || '0',
+      yearsActive: body.yearsActive || '0',
+      awardsWon: body.awardsWon || '0',
       whatWeDo,
+      services,
       whyWorkWithUs,
       studioReelUrl: body.studioReelUrl,
       extraVideos,

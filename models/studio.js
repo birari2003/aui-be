@@ -65,6 +65,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(500),
         allowNull: true,
       },
+      phone: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
+      },
       verificationStatus: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
