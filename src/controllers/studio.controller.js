@@ -342,6 +342,26 @@ const listStudioRequestProfessional = asyncHandler(async (req, res) => {
   return res.status(200).json({ data: rows });
 });
 
+const updateStudioRequestProfessional = asyncHandler(async (req, res) => {
+  const studio = await getStudioByUser(req.user.id);
+  if (!studio) {
+    return res.status(404).json({ message: "Studio profile not found" });
+  }
+
+  const row = await StudioRequestProfessional.findOne({
+    where: { id: req.params.id, studioId: studio.id },
+  });
+
+  if (!row) {
+    return res.status(404).json({ message: "Studio request not found" });
+  }
+
+  await row.update(req.body);
+
+  return res.status(200).json({ message: "Studio request updated", data: row });
+});
+
+
 const createStudioJobPosting = asyncHandler(async (req, res) => {
   const studio = await getStudioByUser(req.user.id);
   if (!studio) {
@@ -505,6 +525,7 @@ module.exports = {
   listTalentBench,
   createStudioRequestProfessional,
   listStudioRequestProfessional,
+  updateStudioRequestProfessional,
   createStudioJobPosting,
   updateStudioJobPosting,
   deleteStudioJobPosting,

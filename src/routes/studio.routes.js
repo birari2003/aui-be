@@ -17,6 +17,7 @@ router.delete("/talent-bench/:professionalId", controller.removeTalent);
 router.get("/talent-bench", controller.listTalentBench);
 router.post("/request-professionals", controller.createStudioRequestProfessional);
 router.get("/request-professionals", controller.listStudioRequestProfessional);
+router.patch("/request-professionals/:id", controller.updateStudioRequestProfessional);
 
 // Job Postings
 router.get("/job-postings", controller.listStudioJobPostings);
