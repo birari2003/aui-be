@@ -18,6 +18,10 @@ const upsertProfile = asyncHandler(async (req, res) => {
     await institute.update(payload);
   }
 
+  if (payload.phone !== undefined) {
+    await User.update({ phone: payload.phone }, { where: { id: req.user.id } });
+  }
+
   const reloaded = await Institute.findOne({ where: { id: institute.id } });
 
   const [talentId] = await TalentId.findOrCreate({

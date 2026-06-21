@@ -1,7 +1,7 @@
 const asyncHandler = require("../utils/async-handler");
 const { Op } = require("sequelize");
 const { User, Professional, Studio, Institute, Engagement, Booking, TalentId } = require("../../models");
-const { sendStatusUpdateEmail } = require("../services/mail.service");
+const { sendStatusUpdateEmail, sendCustomEmail } = require("../services/mail.service");
 
 const listUsers = asyncHandler(async (req, res) => {
   const where = {};
@@ -150,6 +150,47 @@ const analytics = asyncHandler(async (_req, res) => {
   });
 });
 
+const sendBulkEmail = asyncHandler(async (req, res) => {
+  const { emails, subject, body } = req.body;
+  if (!emails || !Array.isArray(emails) || emails.length === 0) {
+    return res.status(400).json({ message: "No recipient emails provided" });
+  }
+  if (!subject) {
+    return res.status(400).json({ message: "Email subject is required" });
+  }
+  if (!body) {
+    return res.status(400).json({ message: "Email body is required" });
+  }
+
+  const results = [];
+  const errors = [];
+
+  for (const email of emails) {
+    try {
+      const htmlBody = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; color: #1f2937;">
+          <h2 style="color: #2563eb; margin-bottom: 20px;">AUI Network Update</h2>
+          <div style="line-height: 1.6; font-size: 15px; white-space: pre-wrap;">${body}</div>
+          <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+          <p style="text-align: center; color: #9ca3af; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} AUI Network. All rights reserved.</p>
+        </div>
+      `;
+      await sendCustomEmail(email, subject, htmlBody);
+      results.push(email);
+    } catch (err) {
+      console.error(`Failed to send email to ${email}:`, err);
+      errors.push({ email, error: err.message });
+    }
+  }
+
+  return res.status(200).json({
+    message: `Emails sent to ${results.length} users. ${errors.length} failed.`,
+    sentCount: results.length,
+    failedCount: errors.length,
+    failures: errors
+  });
+});
+
 module.exports = {
   listUsers,
   updateUserStatus,
@@ -159,4 +200,5 @@ module.exports = {
   listEngagements,
   listBookings,
   analytics,
+  sendBulkEmail,
 };

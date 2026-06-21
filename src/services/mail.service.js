@@ -160,8 +160,27 @@ const sendStatusUpdateEmail = async (email, name, role, status, talentCode) => {
   }
 };
 
+const sendCustomEmail = async (email, subject, bodyHtml) => {
+  const mailOptions = {
+    from: `"AUI Network" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: subject,
+    html: bodyHtml,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Custom Email sent to %s: %s', email, info.messageId);
+    return true;
+  } catch (error) {
+    console.error('Error sending custom email to %s:', email, error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendOtpEmail,
   sendPendingEmail,
   sendStatusUpdateEmail,
+  sendCustomEmail,
 };
