@@ -1,7 +1,7 @@
 const asyncHandler = require("../utils/async-handler");
 const { Op } = require("sequelize");
 const { User, Professional, Studio, Institute, Engagement, Booking, TalentId } = require("../../models");
-const { sendStatusUpdateEmail, sendCustomEmail } = require("../services/mail.service");
+const { sendStatusUpdateEmail, sendCustomEmail, ADMIN_EMAIL_ACCOUNTS } = require("../services/mail.service");
 
 const listUsers = asyncHandler(async (req, res) => {
   const where = {};
@@ -150,8 +150,12 @@ const analytics = asyncHandler(async (_req, res) => {
   });
 });
 
+const getEmailAccounts = asyncHandler(async (_req, res) => {
+  return res.status(200).json({ data: ADMIN_EMAIL_ACCOUNTS });
+});
+
 const sendBulkEmail = asyncHandler(async (req, res) => {
-  const { emails, subject, body } = req.body;
+  const { emails, subject, body, fromEmail } = req.body;
   if (!emails || !Array.isArray(emails) || emails.length === 0) {
     return res.status(400).json({ message: "No recipient emails provided" });
   }
@@ -162,20 +166,21 @@ const sendBulkEmail = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Email body is required" });
   }
 
+  // Validate fromEmail if provided — must be one of the known admin accounts
+  const knownEmails = ADMIN_EMAIL_ACCOUNTS.map(a => a.email);
+  const senderEmail = fromEmail && knownEmails.includes(fromEmail) ? fromEmail : null;
+
   const results = [];
   const errors = [];
 
   for (const email of emails) {
     try {
-      const htmlBody = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; color: #1f2937;">
-          <h2 style="color: #2563eb; margin-bottom: 20px;">AUI Network Update</h2>
-          <div style="line-height: 1.6; font-size: 15px; white-space: pre-wrap;">${body}</div>
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
-          <p style="text-align: center; color: #9ca3af; font-size: 12px; margin: 0;">&copy; ${new Date().getFullYear()} AUI Network. All rights reserved.</p>
-        </div>
+      // Pass clean inner-HTML; buildHtmlEmail() in mail.service.js wraps it
+      // in a full RFC-compliant shell with DOCTYPE, proper headers, footer etc.
+      const innerHtml = `
+        <p style="font-size:15px;color:#475569;line-height:1.7;white-space:pre-wrap;margin:0;">${body.replace(/\n/g, '<br/>')}</p>
       `;
-      await sendCustomEmail(email, subject, htmlBody);
+      await sendCustomEmail(email, subject, innerHtml, senderEmail);
       results.push(email);
     } catch (err) {
       console.error(`Failed to send email to ${email}:`, err);
@@ -200,5 +205,6 @@ module.exports = {
   listEngagements,
   listBookings,
   analytics,
+  getEmailAccounts,
   sendBulkEmail,
 };

@@ -14,6 +14,7 @@ router.patch("/institutes/:instituteId/verify", controller.verifyInstitute);
 router.get("/engagements", controller.listEngagements);
 router.get("/bookings", controller.listBookings);
 router.get("/analytics", controller.analytics);
+router.get("/email-accounts", controller.getEmailAccounts);
 router.post("/send-bulk-email", controller.sendBulkEmail);
 
 module.exports = router;
