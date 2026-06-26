@@ -15,6 +15,7 @@ const institutePublicProfileRoutes = require("./instituteProfile.routes");
 const instituteWorkshopRoutes = require("./instituteWorkshop.routes");
 const workshopRequestRoutes = require("./workshopRequest.routes");
 const nexusRoutes = require("./nexus.routes");
+const platformRoutes = require("./platform.routes");
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.use("/institute-public-profile", institutePublicProfileRoutes);
 router.use("/institute-workshops", instituteWorkshopRoutes);
 router.use("/workshop-requests", workshopRequestRoutes);
 router.use("/nexus", nexusRoutes);
+router.use("/platform", platformRoutes);
 
 
 module.exports = router;
