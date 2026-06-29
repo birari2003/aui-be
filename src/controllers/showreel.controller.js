@@ -54,6 +54,21 @@ const listShowreels = asyncHandler(async (req, res) => {
   });
 });
 
+// Public: Get single showreel by ID
+const getShowreel = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const showreel = await Showreel.findByPk(id);
+  if (!showreel) {
+    return res.status(404).json({ success: false, message: "Showreel not found" });
+  }
+
+  return res.status(200).json({
+    success: true,
+    data: showreel
+  });
+});
+
 // Admin: Delete showreel
 const deleteShowreel = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -121,6 +136,7 @@ const updateShowreel = asyncHandler(async (req, res) => {
 module.exports = {
   createShowreel,
   listShowreels,
+  getShowreel,
   deleteShowreel,
   updateShowreel
 };

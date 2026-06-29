@@ -7,6 +7,9 @@ const upload = require("../services/upload.service");
 // Public list showreels
 router.get("/", controller.listShowreels);
 
+// Public single showreel by ID
+router.get("/:id", controller.getShowreel);
+
 // Admin only actions
 router.post(
   "/",
