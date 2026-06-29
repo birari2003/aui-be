@@ -211,18 +211,22 @@ const serveShowcaseHtml = asyncHandler(async (req, res) => {
   const path = require("path");
   const fs = require("fs");
 
-  // Path to the frontend's build index.html
-  const indexPath = path.join(__dirname, "../../../aui-fe/dist/index.html");
   let html;
   
   try {
+    const indexPath = path.join(__dirname, "../../../aui-fe/dist/index.html");
     html = fs.readFileSync(indexPath, "utf8");
   } catch (err) {
     try {
       const srcIndexPath = path.join(__dirname, "../../../aui-fe/index.html");
       html = fs.readFileSync(srcIndexPath, "utf8");
     } catch (e) {
-      return res.status(500).send("Index template not found");
+      try {
+        const response = await fetch("https://auitalent.com/index.html");
+        html = await response.text();
+      } catch (fetchErr) {
+        return res.status(500).send("Index template not found locally or remotely");
+      }
     }
   }
 
