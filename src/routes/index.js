@@ -16,6 +16,7 @@ const instituteWorkshopRoutes = require("./instituteWorkshop.routes");
 const workshopRequestRoutes = require("./workshopRequest.routes");
 const nexusRoutes = require("./nexus.routes");
 const platformRoutes = require("./platform.routes");
+const showreelRoutes = require("./showreel.routes");
 
 const router = express.Router();
 
@@ -35,6 +36,7 @@ router.use("/institute-workshops", instituteWorkshopRoutes);
 router.use("/workshop-requests", workshopRequestRoutes);
 router.use("/nexus", nexusRoutes);
 router.use("/platform", platformRoutes);
+router.use("/showreels", showreelRoutes);
 
 
 module.exports = router;
