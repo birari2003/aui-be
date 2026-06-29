@@ -31,6 +31,9 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ ok: true, message: "AUI API healthy" });
 });
 
+const { serveShowcaseHtml } = require("./controllers/showreel.controller");
+app.get("/showcase/:id", serveShowcaseHtml);
+
 app.use("/api", routes);
 app.use(notFound);
 app.use(errorHandler);

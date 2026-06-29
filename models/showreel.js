@@ -39,6 +39,11 @@ module.exports = (sequelize, DataTypes) => {
     longMovieUrl: {
       type: DataTypes.STRING(500),
       allowNull: true
+    },
+    slug: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+      unique: true
     }
   }, {
     sequelize,
