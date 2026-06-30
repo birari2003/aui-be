@@ -30,10 +30,16 @@ const createShowreel = asyncHandler(async (req, res) => {
   const { artistName, description, publicUrl, videoUrl, category, longMovieUrl, title, topic } = req.body;
 
   let finalVideoUrl = videoUrl;
+  let thumbnailPath = null;
   
-  // If a file is uploaded, use its path
-  if (req.file) {
-    finalVideoUrl = req.file.path;
+  // If files are uploaded, use their paths
+  if (req.files) {
+    if (req.files.videoFile && req.files.videoFile[0]) {
+      finalVideoUrl = req.files.videoFile[0].path;
+    }
+    if (req.files.thumbnailFile && req.files.thumbnailFile[0]) {
+      thumbnailPath = req.files.thumbnailFile[0].path;
+    }
   }
 
   if (!finalVideoUrl) {
@@ -59,7 +65,8 @@ const createShowreel = asyncHandler(async (req, res) => {
     longMovieUrl,
     title,
     topic,
-    slug
+    slug,
+    thumbnail: thumbnailPath
   });
 
   return res.status(201).json({
@@ -146,10 +153,16 @@ const updateShowreel = asyncHandler(async (req, res) => {
   }
 
   let finalVideoUrl = videoUrl;
+  let thumbnailPath = showreel.thumbnail; // keep existing by default
   
-  // If a new file is uploaded, use its path
-  if (req.file) {
-    finalVideoUrl = req.file.path;
+  // If files are uploaded, use their paths
+  if (req.files) {
+    if (req.files.videoFile && req.files.videoFile[0]) {
+      finalVideoUrl = req.files.videoFile[0].path;
+    }
+    if (req.files.thumbnailFile && req.files.thumbnailFile[0]) {
+      thumbnailPath = req.files.thumbnailFile[0].path;
+    }
   }
 
   if (!finalVideoUrl) {
@@ -178,7 +191,8 @@ const updateShowreel = asyncHandler(async (req, res) => {
     longMovieUrl,
     title,
     topic,
-    slug
+    slug,
+    thumbnail: thumbnailPath
   });
 
   return res.status(200).json({
@@ -237,7 +251,9 @@ const serveShowcaseHtml = asyncHandler(async (req, res) => {
     
     // Resolve thumbnail
     let image = "https://auitalent.com/assets/logo_blck.png";
-    if (showreel.videoUrl) {
+    if (showreel.thumbnail) {
+      image = showreel.thumbnail.startsWith("http") ? showreel.thumbnail : `https://api.auitalent.com/${showreel.thumbnail.replace(/^\//, "").replace(/\\/g, "/")}`;
+    } else if (showreel.videoUrl) {
       const getYouTubeId = (url) => {
         const regExp = /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|&v=)([^#&?]{11}).*/;
         const match = url.match(regExp);

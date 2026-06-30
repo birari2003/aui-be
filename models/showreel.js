@@ -44,6 +44,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(255),
       allowNull: true,
       unique: true
+    },
+    thumbnail: {
+      type: DataTypes.STRING(500),
+      allowNull: true
     }
   }, {
     sequelize,

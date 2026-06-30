@@ -15,7 +15,10 @@ router.post(
   "/",
   protect,
   authorizeAdmin,
-  upload.single("videoFile"),
+  upload.fields([
+    { name: "videoFile", maxCount: 1 },
+    { name: "thumbnailFile", maxCount: 1 }
+  ]),
   controller.createShowreel
 );
 
@@ -30,7 +33,10 @@ router.put(
   "/:id",
   protect,
   authorizeAdmin,
-  upload.single("videoFile"),
+  upload.fields([
+    { name: "videoFile", maxCount: 1 },
+    { name: "thumbnailFile", maxCount: 1 }
+  ]),
   controller.updateShowreel
 );
 
