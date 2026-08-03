@@ -17,6 +17,8 @@ const workshopRequestRoutes = require("./workshopRequest.routes");
 const nexusRoutes = require("./nexus.routes");
 const platformRoutes = require("./platform.routes");
 const showreelRoutes = require("./showreel.routes");
+const aspirantRoutes = require("./aspirant.routes");
+const educationRoutes = require("./education.routes");
 
 const router = express.Router();
 
@@ -24,6 +26,8 @@ router.use("/auth", authRoutes);
 router.use("/professionals", professionalRoutes);
 router.use("/studios", studioRoutes);
 router.use("/institutes", instituteRoutes);
+router.use("/aspirants", aspirantRoutes);
+router.use("/educations", educationRoutes);
 router.use("/search", searchRoutes);
 router.use("/admin", adminRoutes);
 router.use("/reels", reelRoutes);

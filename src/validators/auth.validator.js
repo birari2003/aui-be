@@ -4,8 +4,8 @@ const registerValidator = [
   body("email").isEmail().withMessage("Valid email is required"),
   body("phone").optional().isString(),
   body("role")
-    .isIn(["professional", "studio", "institute", "admin"])
-    .withMessage("Role must be professional, studio, institute, or admin"),
+    .isIn(["professional", "studio", "institute", "admin", "aspirant"])
+    .withMessage("Role must be professional, studio, institute, admin, or aspirant"),
   body("fullName").optional().isString(),
   body("profileData").optional().isObject().withMessage("Profile data is required"),
 ];

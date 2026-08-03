@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       role: {
-        type: DataTypes.ENUM("professional", "studio", "institute", "admin"),
+        type: DataTypes.ENUM("professional", "studio", "institute", "admin", "aspirant"),
         allowNull: false,
       },
       status: {
@@ -33,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasOne(models.Professional, { foreignKey: "userId", as: "professional" });
     User.hasOne(models.Studio, { foreignKey: "userId", as: "studio" });
     User.hasOne(models.Institute, { foreignKey: "userId", as: "institute" });
+    User.hasOne(models.Aspirant, { foreignKey: "userId", as: "aspirant" });
     User.hasOne(models.TalentId, { foreignKey: "userId", as: "talentId" });
     User.hasOne(models.PublicProfessionalProfile, { foreignKey: "userId", as: "publicProfile" });
     User.hasOne(models.PublicStudioProfile, { foreignKey: "userId", as: "publicStudioProfile" });

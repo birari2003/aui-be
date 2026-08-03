@@ -1,6 +1,6 @@
 const asyncHandler = require("../utils/async-handler");
 const { Op } = require("sequelize");
-const { User, Professional, Studio, Institute, Engagement, Booking, TalentId } = require("../../models");
+const { User, Professional, Studio, Institute, Aspirant, Engagement, Booking, TalentId } = require("../../models");
 const { sendStatusUpdateEmail, sendCustomEmail, ADMIN_EMAIL_ACCOUNTS } = require("../services/mail.service");
 
 const listUsers = asyncHandler(async (req, res) => {
@@ -17,8 +17,9 @@ const listUsers = asyncHandler(async (req, res) => {
   const professionalUserIds = users.filter((u) => u.role === "professional").map((u) => u.id);
   const studioUserIds = users.filter((u) => u.role === "studio").map((u) => u.id);
   const instituteUserIds = users.filter((u) => u.role === "institute").map((u) => u.id);
+  const aspirantUserIds = users.filter((u) => u.role === "aspirant").map((u) => u.id);
 
-  const [professionals, studios, institutes] = await Promise.all([
+  const [professionals, studios, institutes, aspirants] = await Promise.all([
     professionalUserIds.length
       ? Professional.findAll({ where: { userId: { [Op.in]: professionalUserIds } } })
       : [],
@@ -28,11 +29,15 @@ const listUsers = asyncHandler(async (req, res) => {
     instituteUserIds.length
       ? Institute.findAll({ where: { userId: { [Op.in]: instituteUserIds } } })
       : [],
+    aspirantUserIds.length
+      ? Aspirant.findAll({ where: { userId: { [Op.in]: aspirantUserIds } } })
+      : [],
   ]);
 
   const professionalByUserId = new Map(professionals.map((row) => [row.userId, row.toJSON()]));
   const studioByUserId = new Map(studios.map((row) => [row.userId, row.toJSON()]));
   const instituteByUserId = new Map(institutes.map((row) => [row.userId, row.toJSON()]));
+  const aspirantByUserId = new Map(aspirants.map((row) => [row.userId, row.toJSON()]));
 
   const enrichedUsers = users.map((user) => {
     const plain = user.toJSON();
@@ -40,6 +45,7 @@ const listUsers = asyncHandler(async (req, res) => {
     plain.professional = professionalByUserId.get(user.id) || null;
     plain.studio = studioByUserId.get(user.id) || null;
     plain.institute = instituteByUserId.get(user.id) || null;
+    plain.aspirant = aspirantByUserId.get(user.id) || null;
 
     return plain;
   });
@@ -53,6 +59,7 @@ const updateUserStatus = asyncHandler(async (req, res) => {
       { model: Professional, as: "professional" },
       { model: Studio, as: "studio" },
       { model: Institute, as: "institute" },
+      { model: Aspirant, as: "aspirant" },
       { model: TalentId, as: "talentId" },
     ],
   });
@@ -74,6 +81,8 @@ const updateUserStatus = asyncHandler(async (req, res) => {
       name = user.studio.studioName;
     } else if (user.role === "institute" && user.institute) {
       name = user.institute.instituteName;
+    } else if (user.role === "aspirant" && user.aspirant) {
+      name = user.aspirant.fullName;
     } else {
       name = user.email;
     }
@@ -129,11 +138,12 @@ const listBookings = asyncHandler(async (_req, res) => {
 });
 
 const analytics = asyncHandler(async (_req, res) => {
-  const [users, professionals, studios, institutes, engagements, bookings] = await Promise.all([
+  const [users, professionals, studios, institutes, aspirants, engagements, bookings] = await Promise.all([
     User.count(),
     Professional.count(),
     Studio.count(),
     Institute.count(),
+    Aspirant.count(),
     Engagement.count(),
     Booking.count(),
   ]);
@@ -144,6 +154,7 @@ const analytics = asyncHandler(async (_req, res) => {
       professionals,
       studios,
       institutes,
+      aspirants,
       engagements,
       bookings,
     },

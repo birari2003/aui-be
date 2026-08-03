@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const asyncHandler = require("../utils/async-handler");
-const { User, OtpVerification, Professional, Studio, Institute, TalentId, sequelize } = require("../../models");
+const { User, OtpVerification, Professional, Studio, Institute, Aspirant, TalentId, sequelize } = require("../../models");
 const { generateToken } = require("../utils/token.util");
 const { sendOtpEmail, sendPendingEmail } = require("../services/mail.service");
 
@@ -46,6 +46,17 @@ const register = asyncHandler(async (req, res) => {
       // Create talent id for institute
       const talentCode = `AUI-INST-${String(user.id).padStart(6, "0")}`;
       await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
+    } else if (role === 'aspirant') {
+      profile = await Aspirant.create({
+        userId: user.id,
+        fullName: fullName || profileData.fullName,
+        email,
+        phone: phone || profileData.phone,
+        ...profileData
+      }, { transaction: t });
+      // Create talent id for aspirant
+      const talentCode = `AUI-ASP-${String(user.id).padStart(6, "0")}`;
+      await TalentId.create({ userId: user.id, talentCode }, { transaction: t });
     }
 
     return { user, profile };
@@ -53,7 +64,7 @@ const register = asyncHandler(async (req, res) => {
 
   // Determine name based on role
   let name = "";
-  if (role === 'professional') {
+  if (role === 'professional' || role === 'aspirant') {
     name = result.profile.fullName;
   } else if (role === 'studio') {
     name = result.profile.studioName;
