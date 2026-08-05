@@ -4,24 +4,14 @@ module.exports = (sequelize, DataTypes) => {
   const AspirantShare = sequelize.define(
     "AspirantShare",
     {
-      id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
       instituteId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
-        field: 'instituteId'
       },
     },
     {
       tableName: "aspirant_shares",
-      timestamps: true,
-      underscored: false,
-      createdAt: 'createdAt',
-      updatedAt: 'updatedAt'
     }
   );
 
