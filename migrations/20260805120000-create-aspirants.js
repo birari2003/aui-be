@@ -68,7 +68,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'Educations', // Based on the table name found in education.js
+          model: 'Educations',
           key: 'id'
         },
         onUpdate: 'CASCADE',

@@ -13,10 +13,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
+        field: 'userId'
       },
       fullName: {
         type: DataTypes.STRING(150),
         allowNull: false,
+        field: 'fullName'
       },
       email: {
         type: DataTypes.STRING(255),
@@ -29,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       photoUrl: {
         type: DataTypes.TEXT('long'),
         allowNull: true,
+        field: 'photoUrl'
       },
       dob: {
         type: DataTypes.STRING(20),
@@ -57,14 +60,17 @@ module.exports = (sequelize, DataTypes) => {
       collegeName: {
         type: DataTypes.STRING(255),
         allowNull: true,
+        field: 'collegeName'
       },
       educationId: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        field: 'educationId'
       },
       educationTitle: {
         type: DataTypes.STRING(255),
         allowNull: true,
+        field: 'educationTitle'
       },
       year: {
         type: DataTypes.STRING(50),
@@ -73,16 +79,20 @@ module.exports = (sequelize, DataTypes) => {
       interestedDepartment: {
         type: DataTypes.STRING(100),
         allowNull: true,
+        field: 'interestedDepartment'
       },
       verificationStatus: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
+        field: 'verificationStatus'
       },
     },
     {
       tableName: "aspirants",
       timestamps: true,
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt'
     }
   );
 

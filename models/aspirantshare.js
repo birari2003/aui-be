@@ -13,11 +13,14 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
+        field: 'instituteId'
       },
     },
     {
       tableName: "aspirant_shares",
       timestamps: true,
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt'
     }
   );
 
