@@ -7,7 +7,7 @@ const router = express.Router();
 router.use(protect, authorizeAdmin);
 
 router.get("/users", controller.listUsers);
-router.patch("/users/:userId/status", controller.updateUserStatus);
+router.post("/users/:userId/status", controller.updateUserStatus);
 router.patch("/professionals/:professionalId/verify", controller.verifyProfessional);
 router.patch("/studios/:studioId/verify", controller.verifyStudio);
 router.patch("/institutes/:instituteId/verify", controller.verifyInstitute);
